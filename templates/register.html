@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo-glow"></div>
+            <div class="login-branding">
+                <div class="login-brand-mark">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <path id="pulse-path" d="M2,16 L7,16 L10,7 L16,26 L22,9 L26,20 L29,16 L31,16" 
+                              stroke="url(#reg-grad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="reg-grad" x1="0" y1="0" x2="32" y2="0">
+                                <stop offset="0%" stop-color="#0d9488"/>
+                                <stop offset="100%" stop-color="#0f766e"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>FitPulse</h2>
+            </div>
+            <h1>Secure Sign Up</h1>
+            <p>Create a secure profile to isolate your metrics and reports history</p>
+        </div>
+
+        <form id="register-form" class="login-form">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" name="username" placeholder="Choose username" required autocomplete="username" minlength="3">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" name="password" placeholder="Choose password" required autocomplete="new-password" minlength="6">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🛡️</span>
+                    <input type="password" id="confirm-password" placeholder="Confirm password" required autocomplete="new-password" minlength="6">
+                </div>
+            </div>
+
+            <div id="register-error" class="alert alert-danger" style="display:none; margin-top: 10px; margin-bottom: 20px;"></div>
+
+            <button type="submit" class="btn-primary btn-submit" style="background: linear-gradient(135deg, #0d9488, #0f766e);">
+                <span>Create Secure Profile</span>
+                <span class="btn-glow"></span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>Already have an account? <a href="/login" style="color: var(--teal); font-weight: 600; text-decoration: none;">Sign In</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Inherits primary shell classes from base.html and layout properties from login styles */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 220px);
+    width: 100%;
+    padding: 20px 0;
+}
+
+.login-card {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    animation: register-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes register-entrance {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.login-logo-glow {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.login-branding {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.login-brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(13, 148, 136, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.15);
+}
+
+#pulse-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes draw-pulse {
+    0% { stroke-dashoffset: 200; }
+    50% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -200; }
+}
+
+.login-branding h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 30%, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.login-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.login-header p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: var(--dim);
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 13px 20px 13px 40px;
+    font-size: 14.5px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #ffffff;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.input-wrapper input:hover {
+    border-color: rgba(13, 148, 136, 0.3);
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.input-wrapper input:focus {
+    border-color: var(--teal);
+    background: rgba(15, 23, 42, 0.65);
+    box-shadow: 0 0 16px rgba(13, 148, 136, 0.25);
+}
+
+.input-wrapper input:focus ~ .input-icon {
+    color: var(--teal);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+    border-radius: 14px;
+    color: white;
+}
+
+.btn-glow {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+.btn-submit:hover .btn-glow {
+    animation: btn-shine 1.5s infinite;
+}
+
+@keyframes btn-shine {
+    100% { left: 150%; }
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.login-footer p {
+    font-size: 12.5px;
+    color: var(--dim);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const registerForm = document.getElementById("register-form");
+    const errorAlert = document.getElementById("register-error");
+
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorAlert.style.display = "none";
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirm-password").value;
+
+        if (password !== confirmPassword) {
+            errorAlert.textContent = "Passwords do not match.";
+            errorAlert.style.display = "block";
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.ok) {
+                // Redirect user to login page with alert query param
+                window.location.href = "/login?registered=1";
+            } else {
+                const data = await res.json();
+                errorAlert.textContent = data.message || "Registration failed. Username may already exist.";
+                errorAlert.style.display = "block";
+            }
+        } catch (error) {
+            errorAlert.textContent = "Network error. Please try again.";
+            errorAlert.style.display = "block";
+        }
+    });
+});
+</script>
+{% endblock %}

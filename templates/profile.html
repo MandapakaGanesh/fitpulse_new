@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="profile-container">
+    <!-- Header Summary Block -->
+    <div class="profile-header">
+        <div class="user-avatar-glow"></div>
+        <div class="profile-header-info">
+            <span class="badge badge-active">Active Wellness Portal</span>
+            <h1>Wellness Account: <span class="highlight-user">{{ username }}</span></h1>
+            <p>Secure account for tracing wellness logs and historical fitness reports.</p>
+        </div>
+    </div>
+
+    <!-- KPI Panels -->
+    <div class="kpi-grid">
+        <div class="kpi-card glass">
+            <div class="kpi-card-glow indigo-glow"></div>
+            <div class="kpi-icon">📁</div>
+            <div class="kpi-details">
+                <span class="kpi-label">Saved Reports</span>
+                <span class="kpi-value" id="kpi-runs">0</span>
+                <span class="kpi-trend">Total reports compiled</span>
+            </div>
+        </div>
+
+        <div class="kpi-card glass">
+            <div class="kpi-card-glow red-glow"></div>
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-details">
+                <span class="kpi-label">Unusual Activity Found</span>
+                <span class="kpi-value" id="kpi-anomalies">0</span>
+                <span class="kpi-trend danger-text">Total unusual activity flags</span>
+            </div>
+        </div>
+
+        <div class="kpi-card glass">
+            <div class="kpi-card-glow teal-glow"></div>
+            <div class="kpi-icon">💓</div>
+            <div class="kpi-details">
+                <span class="kpi-label">Average Daily Metric Value</span>
+                <span class="kpi-value" id="kpi-mean">0.0</span>
+                <span class="kpi-trend">Overall database average baseline</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Visuals -->
+    <div class="profile-visuals-row">
+        <div class="chart-card glass">
+            <div class="card-header">
+                <h3>📈 Unusual Activity Trends</h3>
+                <p>Tracking the volume of flagged wellness changes across your history</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="anomaly-trend-canvas" height="240"></canvas>
+                <div id="no-chart-data" class="no-data-notice" style="display: none;">
+                    📊 Run your first data pipeline to populate the wellness timeline.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Runs Table -->
+    <div class="history-card glass">
+        <div class="card-header">
+            <h3>📑 Historical Run Archives</h3>
+            <p>Access previous processed biometrics telemetry runs and download PDF records.</p>
+        </div>
+        <div class="table-responsive">
+            <table class="datatable">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Report Reference</th>
+                        <th>Daily Average</th>
+                        <th>Unusual Activity</th>
+                        <th>Detection Sensitivity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="runs-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--dim);">
+                            🔄 Loading historical pipeline run records...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    animation: profile-entrance 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes profile-entrance {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-header {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-avatar-glow {
+    position: absolute;
+    right: 40px;
+    top: -20px;
+    width: 130px;
+    height: 130px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.profile-header-info h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 8px 0;
+}
+
+.highlight-user {
+    background: linear-gradient(135deg, var(--indigo), var(--teal));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+}
+
+.badge-active {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card-glow {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: -50px;
+    right: -50px;
+    border-radius: 50%;
+    filter: blur(25px);
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.indigo-glow { background: var(--indigo); }
+.red-glow { background: #ef4444; }
+.teal-glow { background: var(--teal); }
+
+.kpi-icon {
+    font-size: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.kpi-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.kpi-value {
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 4px 0;
+}
+
+.kpi-trend {
+    font-size: 11px;
+    color: var(--dim);
+}
+
+.danger-text {
+    color: #f87171 !important;
+}
+
+.profile-visuals-row {
+    margin-bottom: 24px;
+}
+
+.chart-card {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 30px;
+}
+
+.card-header {
+    margin-bottom: 20px;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.card-header p {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.no-data-notice {
+    text-align: center;
+    padding: 60px;
+    color: var(--dim);
+    font-weight: 500;
+}
+
+.history-card {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 30px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.datatable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.datatable th, .datatable td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13.5px;
+}
+
+.datatable th {
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-size: 11.5px;
+}
+
+.datatable tr:hover td {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.run-id-hash {
+    font-family: monospace;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.download-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--teal);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.download-link:hover {
+    color: #2dd4bf;
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const response = await fetch("/api/profile-data");
+        if (!response.ok) return;
+
+        const data = await response.json();
+        
+        // Populate KPIs
+        document.getElementById("kpi-runs").textContent = data.total_runs;
+        document.getElementById("kpi-anomalies").textContent = data.total_anomalies;
+        document.getElementById("kpi-mean").textContent = data.avg_metric > 0 ? data.avg_metric.toFixed(1) : "0.0";
+
+        const tableBody = document.getElementById("runs-table-body");
+        
+        if (!data.runs || data.runs.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--dim);">
+                        📁 No historical run archives. Start a fresh analysis to record metrics.
+                    </td>
+                </tr>
+            `;
+            document.getElementById("no-chart-data").style.display = "block";
+            document.getElementById("anomaly-trend-canvas").style.display = "none";
+            return;
+        }
+
+        // Populate Table
+        let tableRows = "";
+        data.runs.forEach(run => {
+            const dateStr = new Date(run.timestamp * 1000).toLocaleString();
+            const anomalyClass = run.anomaly_count > 0 ? 'class="danger-text"' : '';
+            tableRows += `
+                <tr>
+                    <td><strong>${dateStr}</strong></td>
+                    <td><span class="run-id-hash">${run.run_id.substring(0, 8)}...</span></td>
+                    <td>${run.mean.toFixed(1)}</td>
+                    <td ${anomalyClass}><strong>${run.anomaly_count}</strong> flagged days</td>
+                    <td>&plusmn;${run.sigma.toFixed(1)} sensitivity</td>
+                    <td>
+                        <a href="/api/download-report?run_id=${run.run_id}" class="download-link" target="_blank">
+                            📥 Download PDF
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+        tableBody.innerHTML = tableRows;
+
+        // Draw HTML5 Canvas Chart
+        drawChart(data.runs);
+
+    } catch (err) {
+        console.error("Failed to load profile details", err);
+    }
+});
+
+function drawChart(runs) {
+    const canvas = document.getElementById("anomaly-trend-canvas");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    
+    // Set matching width for high resolution
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = 240 * 2;
+    ctx.scale(2, 2);
+
+    const width = rect.width;
+    const height = 240;
+
+    // Filter to last 10 runs for readability (chronological left-to-right)
+    const activeRuns = [...runs].reverse().slice(-10);
+
+    const paddingLeft = 45;
+    const paddingRight = 20;
+    const paddingTop = 25;
+    const paddingBottom = 35;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    // Draw Grid Lines
+    const maxVal = Math.max(...activeRuns.map(r => r.anomaly_count), 4); // Always at least 4 scale height
+    const gridRows = 4;
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.lineWidth = 1;
+    ctx.font = "10px sans-serif";
+    ctx.fillStyle = "rgba(148, 163, 184, 0.7)";
+
+    for (let i = 0; i <= gridRows; i++) {
+        const y = paddingTop + (chartHeight * i / gridRows);
+        const labelVal = Math.round(maxVal - (maxVal * i / gridRows));
+        
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(width - paddingRight, y);
+        ctx.stroke();
+
+        ctx.fillText(labelVal, 15, y + 3);
+    }
+
+    // Coordinates mapping
+    const points = activeRuns.map((run, idx) => {
+        const x = paddingLeft + (chartWidth * idx / (activeRuns.length - 1 || 1));
+        const y = paddingTop + chartHeight - (chartHeight * run.anomaly_count / maxVal);
+        return { x, y, run };
+    });
+
+    // Draw Area gradient
+    const areaGlow = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+    areaGlow.addColorStop(0, "rgba(99, 102, 241, 0.15)");
+    areaGlow.addColorStop(1, "rgba(99, 102, 241, 0)");
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, height - paddingBottom);
+    points.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(points[points.length - 1].x, height - paddingBottom);
+    ctx.closePath();
+    ctx.fillStyle = areaGlow;
+    ctx.fill();
+
+    // Draw Line
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.strokeStyle = "rgba(99, 102, 241, 0.8)";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Draw Points & Labels
+    points.forEach((p, idx) => {
+        // Red dot for anomalies, blue for normal
+        const isAnomalyRun = p.run.anomaly_count > 0;
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = isAnomalyRun ? "#ef4444" : "#3b82f6";
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1.25;
+        ctx.fill();
+        ctx.stroke();
+
+        // X axis labels
+        const timeLabel = new Date(p.run.timestamp * 1000).toLocaleDateString([], {month: 'short', day: 'numeric'});
+        ctx.fillStyle = "rgba(148, 163, 184, 0.7)";
+        ctx.font = "9px sans-serif";
+        ctx.fillText(timeLabel, p.x - 15, height - 12);
+    });
+}
+</script>
+{% endblock %}

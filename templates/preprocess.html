@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- What was done banner -->
+<section class="panel">
+    <div class="info-banner" style="margin-bottom: 24px;">
+        <div class="info-icon">✅</div>
+        <div>
+            <div class="info-title">Your data was uploaded &amp; columns were verified!</div>
+            <div class="info-body">We now understand what each column in your file represents. Next, we'll clean your data — removing gaps, fixing errors, and making it ready for health analysis.</div>
+        </div>
+    </div>
+
+    <div class="panel-header">
+        <h1>Data Cleaning &amp; Preparation</h1>
+        <p>Before we can analyze your fitness trends, we need to make sure your data is complete and consistent. This step runs automatically — just click the button below.</p>
+    </div>
+
+    <!-- What cleaning does, in plain words -->
+    <div class="info-cards-row">
+        <div class="info-card">
+            <div class="info-card-icon">🩹</div>
+            <div class="info-card-title">Fill In Missing Days</div>
+            <div class="info-card-body">If your tracker skipped a day or two, we'll carry the last known value forward so there are no gaps.</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">🗑️</div>
+            <div class="info-card-title">Remove Empty Columns</div>
+            <div class="info-card-body">Any columns that are completely blank are dropped so they don't interfere with the analysis.</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">📐</div>
+            <div class="info-card-title">Align Time Periods</div>
+            <div class="info-card-body">If you uploaded multiple files, we sync them to the same timeline so every reading lines up correctly.</div>
+        </div>
+    </div>
+
+    <!-- Quick summary of what we have -->
+    <div class="data-summary-row">
+        <div class="summary-pill">📁 {{ stats.file_count }} file{{ 's' if stats.file_count != 1 else '' }} loaded</div>
+        <div class="summary-pill">📊 {{ "{:,}".format(stats.total_rows|default(0)) }} data points found</div>
+        <div class="summary-pill">📋 {{ stats.total_cols }} columns detected</div>
+    </div>
+
+    <div class="btn-row">
+        <a href="/" class="btn-secondary">← Go back</a>
+        <button id="btnClean" class="btn-primary" onclick="processData(this)">
+            Clean My Data &amp; Continue →
+        </button>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function processData(btn) {
+    btn.disabled = true;
+    btn.innerText = "Cleaning your data… please wait";
+
+    try {
+        const res = await fetch("/api/clean-data", { method: "POST" });
+        if (!res.ok) {
+            alert("Something went wrong. Please go back and re-upload your file.");
+            btn.disabled = false;
+            btn.innerText = "Clean My Data & Continue →";
+            return;
+        }
+        const data = await res.json();
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        }
+    } catch (err) {
+        alert("Connection error — please check your server is running.");
+        btn.disabled = false;
+        btn.innerText = "Clean My Data & Continue →";
+    }
+}
+</script>
+{% endblock %}

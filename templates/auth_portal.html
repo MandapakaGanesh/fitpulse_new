@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="portal-wrapper">
+    <div class="portal-container">
+        <div class="portal-header">
+            <div class="portal-logo-glow"></div>
+            <div class="portal-branding">
+                <div class="portal-brand-mark">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <path id="pulse-path" d="M2,16 L7,16 L10,7 L16,26 L22,9 L26,20 L29,16 L31,16" 
+                              stroke="url(#portal-grad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="portal-grad" x1="0" y1="0" x2="32" y2="0">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#0d9488"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>FitPulse</h2>
+            </div>
+            <h1>Authentication Gateway</h1>
+            <p>Access the dynamic health anomaly telemetry and benchmarking workspace</p>
+        </div>
+
+        <div class="portal-choices">
+            <!-- Choice 1: Login -->
+            <div class="portal-card" onclick="location.href='/login'">
+                <div class="portal-card-glow"></div>
+                <div class="portal-card-icon">🔑</div>
+                <h3>Sign In</h3>
+                <p>Log into your existing analyst profile to check diagnostic reports and biometric summaries.</p>
+                <div class="portal-card-btn">Enter Portal →</div>
+            </div>
+
+            <!-- Choice 2: Create Account -->
+            <div class="portal-card register-card-highlight" onclick="location.href='/register'">
+                <div class="portal-card-glow"></div>
+                <div class="portal-card-icon">🛡️</div>
+                <h3>Secure Sign Up</h3>
+                <p>Create a new account with dynamic salts, SHA-256 password hashing, and isolated profile history.</p>
+                <div class="portal-card-btn">Create Account →</div>
+            </div>
+        </div>
+
+        <div class="portal-footer">
+            <p>FitPulse Biometrics Analytics Pipeline &copy; 2026</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.portal-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 200px);
+    width: 100%;
+    padding: 20px 0;
+}
+
+.portal-container {
+    width: 100%;
+    max-width: 800px;
+    animation: portal-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes portal-entrance {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.portal-header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.portal-logo-glow {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.portal-branding {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.portal-brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15);
+}
+
+#pulse-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes draw-pulse {
+    0% { stroke-dashoffset: 200; }
+    50% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -200; }
+}
+
+.portal-branding h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 30%, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.portal-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.portal-header p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.portal-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.portal-card {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 20px 48px rgba(99, 102, 241, 0.15), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.register-card-highlight:hover {
+    border-color: rgba(13, 148, 136, 0.35);
+    box-shadow: 0 20px 48px rgba(13, 148, 136, 0.15), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.portal-card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+    transition: transform 0.5s ease;
+}
+
+.portal-card:hover .portal-card-glow {
+    transform: scale(1.1);
+}
+
+.register-card-highlight .portal-card-glow {
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.03) 0%, transparent 60%);
+}
+
+.portal-card-icon {
+    font-size: 42px;
+    margin-bottom: 20px;
+}
+
+.portal-card h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 12px;
+}
+
+.portal-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    min-height: 68px;
+}
+
+.portal-card-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    transition: all 0.25s ease;
+}
+
+.portal-card:hover .portal-card-btn {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.register-card-highlight:hover .portal-card-btn {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+}
+
+.portal-footer {
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+}
+</style>
+{% endblock %}

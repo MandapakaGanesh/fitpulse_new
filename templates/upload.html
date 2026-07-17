@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ── Animated Welcome Page Overlay ── -->
+<div id="welcome-overlay" class="welcome-overlay" style="display: none;">
+    <div class="welcome-panel">
+        
+        <!-- Left Side: Copy & Actions -->
+        <div class="welcome-left">
+            <div class="welcome-brand-header">
+                <div class="welcome-brand-mark">
+                    <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                        <polyline points="2,16 7,16 10,7 16,26 22,9 26,20 29,16 30,16"
+                            stroke="url(#welcome-g-light)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs><linearGradient id="welcome-g-light" x1="0" y1="0" x2="32" y2="0">
+                            <stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#0d9488"/>
+                        </linearGradient></defs>
+                    </svg>
+                </div>
+                <span class="welcome-brand">FitPulse</span>
+            </div>
+            
+            <h1 class="welcome-title">Fitness Tracker Analytics. Simplified.</h1>
+            <p class="welcome-subtitle">Upload, clean, and find unusual activity trends in your step counts and heart rate logs in a single click.</p>
+            
+            <div class="welcome-bullets">
+                <div class="welcome-bullet">
+                    <div class="bullet-icon">🔍</div>
+                    <div class="bullet-content">
+                        <div class="bullet-headline">Automated Profiling & Ingestion</div>
+                        <div class="bullet-desc">Profile missing entries, duplicates, and range boundaries automatically.</div>
+                    </div>
+                </div>
+                <div class="welcome-bullet">
+                    <div class="bullet-icon">🩺</div>
+                    <div class="bullet-content">
+                        <div class="bullet-headline">Smart Activity Detection</div>
+                        <div class="bullet-desc">Detects unusual patterns using statistical criteria and cluster detection.</div>
+                    </div>
+                </div>
+                <div class="welcome-bullet">
+                    <div class="bullet-icon">📊</div>
+                    <div class="bullet-content">
+                        <div class="bullet-headline">Cohort Benchmarking</div>
+                        <div class="bullet-desc">Benchmark health logs against baseline patient cohort percentile distributions.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="welcome-cta" class="welcome-cta-btn">Enter Ingestion Wizard →</button>
+        </div>
+        
+        <!-- Right Side: Graphic Visual -->
+        <div class="welcome-right">
+            <div class="graphic-wrapper">
+                <img src="/static/images/welcome_graphic.png" alt="Cardiology Telemetry Dashboard" class="welcome-graphic-img">
+                <div class="graphic-glow"></div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    (function() {
+        if (!sessionStorage.getItem("fp_welcome_seen")) {
+            document.getElementById("welcome-overlay").style.display = "flex";
+        }
+    })();
+</script>
+
+<!-- ── What Was Done (shown after upload completes) ── -->
+<section class="panel info-done" id="done-banner" style="display:none;">
+    <div class="info-banner">
+        <div class="info-icon">✅</div>
+        <div>
+            <div class="info-title">Your files were uploaded successfully!</div>
+            <div class="info-body">We identified your columns automatically — no manual setup needed. Review the column roles below before continuing.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Stage 1 Upload ── -->
+<section id="upload-section" class="panel">
+    <div class="panel-header">
+        <h1>Upload your fitness data</h1>
+        <p>Simply drop in your data file (CSV or Excel). FitPulse will read it and figure out what each column means — steps, heart rate, dates, and more — automatically.</p>
+    </div>
+
+    <!-- What you'll get -->
+    <div class="info-steps">
+        <div class="info-step"><span class="info-step-num">1</span><span>Upload your file below</span></div>
+        <div class="info-step-arrow">→</div>
+        <div class="info-step"><span class="info-step-num">2</span><span>We detect your columns</span></div>
+        <div class="info-step-arrow">→</div>
+        <div class="info-step"><span class="info-step-num">3</span><span>Confirm & move on</span></div>
+    </div>
+
+    <div id="dropzone" class="dropzone">
+        <input type="file" id="file-input" multiple accept=".csv,.xlsx,.xls" hidden>
+        <div class="dropzone-icon">📂</div>
+        <div class="dropzone-text">Drag your file here, or <span class="link">click to browse</span></div>
+        <div class="dropzone-sub">Supports .CSV and .Excel files · you can upload multiple files</div>
+    </div>
+
+    <ul id="file-list" class="file-list"></ul>
+
+    <button id="analyze-btn" class="btn-primary" disabled>Detect Columns →</button>
+    <div style="text-align: center; margin-top: 16px;">
+        <button id="sample-data-btn" class="btn-secondary" style="font-size: 13px; padding: 6px 12px; border: none; background: transparent; color: var(--dim); cursor: pointer; text-decoration: underline;">
+            Don't have a file? Try with sample data instead
+        </button>
+    </div>
+    <div id="upload-error" class="alert alert-danger" style="display:none; margin-top: 16px;"></div>
+</section>
+
+<!-- ── Stage 1 Mapping Confirmation ── -->
+<section id="mapping-section" class="panel" style="display:none;">
+    <div class="panel-header">
+        <h2>Review detected columns</h2>
+        <p>We've read your file and matched each column to a health metric. Double-check below — if anything looks wrong, just pick the right option from the dropdown.</p>
+    </div>
+
+    <div class="info-callout">
+        💡 <strong>Tip:</strong> If a column is marked "Not Detected", it means we weren't sure. You can manually assign it using the dropdown, or leave it and continue.
+    </div>
+
+    <!-- Data Health Panel injects here -->
+    <div id="data-health-panel" style="margin-bottom: 24px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; display: none;"></div>
+
+    <div id="mapping-meta" class="meta-row"></div>
+
+    <table class="mapping-table">
+        <thead>
+            <tr><th>Health Signal</th><th>Column in your file</th><th>Quality</th><th>How confident?</th></tr>
+        </thead>
+        <tbody id="mapping-tbody"></tbody>
+    </table>
+
+    <details class="generic-details">
+        <summary>📋 Other columns in your file (not assigned to a specific role)</summary>
+        <div id="generic-columns"></div>
+    </details>
+
+    <button id="confirm-btn" class="btn-primary">Looks good — Continue →</button>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/upload.js"></script>
+<script>
+// Show success banner when mapping section becomes visible
+const origConfirm = window.onConfirmMapping;
+const mappingObs = new MutationObserver(() => {
+    const ms = document.getElementById('mapping-section');
+    if (ms && ms.style.display !== 'none') {
+        document.getElementById('done-banner').style.display = '';
+    }
+});
+mappingObs.observe(document.getElementById('mapping-section'), { attributes: true, attributeFilter: ['style'] });
+</script>
+{% endblock %}

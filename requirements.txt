@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+pandas
+numpy
+openpyxl
+matplotlib
+seaborn
+scikit-learn
+tsfresh
+prophet
+fpdf2

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="panel">
+    <!-- Done banner -->
+    <div class="info-banner" style="margin-bottom: 24px;">
+        <div class="info-icon">🎉</div>
+        <div>
+            <div class="info-title">Analysis complete — your report is ready!</div>
+            <div class="info-body">We've analysed your fitness data and summarised everything below. You can review it on screen or download it as a PDF to share or keep.</div>
+        </div>
+    </div>
+
+    <div class="panel-header">
+        <h1>Your Health Report</h1>
+        <p>Here's a full summary of what we found in your data. Everything is written in plain English — no charts full of jargon.</p>
+    </div>
+
+    {% if results %}
+    <!-- ── Summary Pills ── -->
+    <div class="data-summary-row">
+        {% set s = results.summary_stats %}
+        <div class="summary-pill">📅 {{ s.total_days }} days analysed</div>
+        <div class="summary-pill">📊 Avg: {{ "{:,.1f}".format(s.mean) }}</div>
+        <div class="summary-pill">⬆️ Peak: {{ "{:,}".format(s.max) }}</div>
+        <div class="summary-pill">⬇️ Lowest: {{ "{:,}".format(s.min) }}</div>
+        <div class="summary-pill {% if s.anomaly_count > 0 %}pill-warn{% endif %}">
+            ⚠️ {{ s.anomaly_count }} unusual day{{ 's' if s.anomaly_count != 1 else '' }}
+        </div>
+    </div>
+
+    <!-- ── What We Found (Insights) ── -->
+    <div style="margin-bottom: 24px;">
+        <h2 style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:14px;">💡 What We Found</h2>
+        {% for insight in results.insights %}
+        <div class="info-callout">{{ insight | safe }}</div>
+        {% endfor %}
+    </div>
+
+    <!-- ── Chart Preview ── -->
+    {% if results.chart_b64 %}
+    <div style="margin-bottom:28px;">
+        <h2 style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:14px;">📈 Activity Chart</h2>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;">
+            <img src="data:image/png;base64,{{ results.chart_b64 }}" alt="Activity chart" style="width:100%;border-radius:8px;">
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Report History ── -->
+    <div id="run-history-section" style="margin-bottom:28px; display:none;">
+        <h2 style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:14px;">⏪ Analysis Trend History</h2>
+        <div id="run-history-content" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;">
+        </div>
+    </div>
+
+    <!-- ── Anomaly Table ── -->
+    {% if results.anomalies %}
+    <div style="margin-bottom:28px;">
+        <h2 style="font-size:17px;font-weight:700;color:#0f172a;margin-bottom:14px;">
+            ⚠️ Flagged Unusual Days ({{ results.anomalies | length }})
+        </h2>
+        <div class="info-callout">
+            💡 These are days when your {{ results.metric_name }} reading looked significantly different from your normal pattern. They don't necessarily mean something is wrong — they're just worth knowing about.
+        </div>
+        <table class="mapping-table" style="margin-top:14px;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>{{ results.metric_name }}</th>
+                    <th>How unusual?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in results.anomalies %}
+                <tr>
+                    <td>{{ a.date }}</td>
+                    <td><strong>{{ "{:,.1f}".format(a.value) }}</strong></td>
+                    <td>
+                        <span class="confidence-badge {% if a.severity == 'High' %}confidence-low{% else %}confidence-med{% endif %}">
+                            {{ a.severity }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="info-banner" style="background:#ecfdf5;border-color:#a7f3d0;margin-bottom:24px;">
+        <div class="info-icon">✅</div>
+        <div>
+            <div class="info-title">No unusual days detected!</div>
+            <div class="info-body">Your data looks consistent throughout the entire period — great news!</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Download Button ── -->
+    <div class="btn-row" style="margin-top: 8px;">
+        <a href="/analyze" class="btn-secondary">← Back to Analysis</a>
+        <a href="/api/download-report" class="btn-primary" id="downloadBtn" style="text-align:center;text-decoration:none;">
+            ⬇️ Download PDF Report
+        </a>
+        <a href="/" class="btn-secondary">Start Over</a>
+    </div>
+
+    {% else %}
+    <!-- No results yet -->
+    <div class="info-banner" style="background:#fef2f2;border-color:#fecaca;margin-bottom:24px;">
+        <div class="info-icon">⚠️</div>
+        <div>
+            <div class="info-title">No analysis results yet</div>
+            <div class="info-body">Please go back to the Analysis step and run the health analysis first before generating a report.</div>
+        </div>
+    </div>
+    <div class="btn-row">
+        <a href="/analyze" class="btn-primary">Go to Analysis →</a>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animate the download button to give feedback
+document.getElementById('downloadBtn')?.addEventListener('click', function() {
+    this.innerText = "⏳ Preparing your PDF…";
+    setTimeout(() => { this.innerHTML = "⬇️ Download PDF Report"; }, 3000);
+});
+
+// Load Run History
+window.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const res = await fetch("/api/report-runs");
+        const data = await res.json();
+        
+        if (data.history && data.history.length > 1) {
+            document.getElementById("run-history-section").style.display = "";
+            let html = '<table class="mapping-table" style="margin-top:0;">';
+            html += '<thead><tr><th>Time</th><th>Sensitivity Used</th><th>Unusual Activity Found</th></tr></thead><tbody>';
+            data.history.forEach(run => {
+                const dt = new Date(run.timestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                html += `<tr><td>${dt}</td><td><strong>${run.sigma || '—'}</strong></td><td>${run.anomaly_count}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            html += '<p style="margin-top:12px; font-size:13px; color:var(--dim);">This summarizes how the number of flagged days changes as you adjust sensitivity settings in the Analysis step.</p>';
+            document.getElementById("run-history-content").innerHTML = html;
+        }
+    } catch(e) {
+        console.error("Failed to load run history:", e);
+    }
+});
+</script>
+{% endblock %}

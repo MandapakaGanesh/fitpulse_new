@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db:
+    image: mongo:latest
+    container_name: fitpulse-db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  web:
+    build: .
+    container_name: fitpulse-web
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://db:27017/
+
+volumes:
+  mongo-data:

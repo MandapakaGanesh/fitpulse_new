@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+    <!-- What was done banner -->
+    <div class="info-banner" style="margin-bottom: 24px;">
+        <div class="info-icon">✅</div>
+        <div>
+            <div class="info-title">Your data is clean &amp; ready!</div>
+            <div class="info-body">All gaps have been filled and your data has been aligned. We'll now look for unusual patterns in your fitness activity — things that might be worth paying attention to.</div>
+        </div>
+    </div>
+
+    <div class="panel-header">
+        <h1>Health Pattern Analysis</h1>
+        <p>Click the button below to start the analysis. We'll scan your activity data for unusual days, calculate your trends, and give you a plain-English summary.</p>
+    </div>
+
+    <!-- Analysis error alert -->
+    <div id="analysis-error" class="alert alert-danger" style="display:none; margin-bottom: 24px;"></div>
+
+    <!-- What analysis does, in plain words -->
+    <div class="info-cards-row" id="pre-cards">
+        <div class="info-card">
+            <div class="info-card-icon">🔍</div>
+            <div class="info-card-title">Spot Unusual Days</div>
+            <div class="info-card-body">We compare each day to your personal baseline and flag ones that look significantly different.</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">📈</div>
+            <div class="info-card-title">Identify Your Trend</div>
+            <div class="info-card-body">We check whether your activity has been increasing, decreasing, or staying steady over time.</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">💡</div>
+            <div class="info-card-title">Plain-English Insights</div>
+            <div class="info-card-body">No charts full of jargon — just clear, simple sentences about what we found.</div>
+        </div>
+    </div>
+
+    <div class="btn-row" id="run-btn-row">
+        <a href="/preprocess" class="btn-secondary">← Go back</a>
+        <button id="btnAnalyze" class="btn-primary" onclick="runAnalysis(this)">
+            Analyse My Data →
+        </button>
+    </div>
+
+    <!-- ── Results section (hidden until analysis completes) ── -->
+    <div id="results-section" style="display:none;">
+        <hr style="border:none; border-top:1px solid #e2e8f0; margin:28px 0;">
+
+        <!-- Metric and summary pills -->
+        <div style="margin-bottom:20px;">
+            <h2 id="res-metric-name" style="font-size:20px;font-weight:800;color:#0f172a;margin-bottom:12px;"></h2>
+            <div class="data-summary-row" id="res-pills"></div>
+        </div>
+
+        <!-- Plain-English insights -->
+        <div id="res-insights" style="margin-bottom:16px;"></div>
+
+        <!-- Correlation insights -->
+        <h3 id="corr-insights-header" style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;display:none;">🔗 Correlation Insights</h3>
+        <div id="corr-insights" style="margin-bottom:24px;"></div>
+
+        <!-- User Comparison -->
+        <h3 id="user-compare-header" style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;display:none;">👥 Cohort Comparison</h3>
+        <div id="user-compare-section" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:24px;display:none;">
+            <label for="user-select" style="font-size:14px;font-weight:600;color:#0f172a;">Compare user:</label>
+            <select id="user-select" onchange="runUserComparison(this.value)" style="margin-bottom:16px;padding:6px;border-radius:6px;border:1px solid #cbd5e1;"></select>
+            <div id="user-compare-results" style="display: flex; gap: 16px; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- Chart -->
+        <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">📉 Trend Analysis</h3>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:24px;">
+            <img id="res-chart" src="" alt="Activity chart" style="width:100%;border-radius:8px;">
+        </div>
+
+        <!-- Anomaly table -->
+        <div id="anomaly-section" style="display:none; margin-bottom: 24px;">
+            <h3 style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">📋 Flagged Unusual Days</h3>
+            <table class="mapping-table" id="anomaly-table">
+                <thead>
+                    <tr><th>Date</th><th>Reading</th><th>Severity</th><th>Explanation</th></tr>
+                </thead>
+                <tbody id="anomaly-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Sensitivity Config -->
+        <div id="sensitivity-config" style="background: var(--card); border: 1px solid var(--edge); border-radius: 14px; padding: 16px; margin-bottom: 24px; display: none;">
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px;">⚙️ Detection Sensitivity Controls</h3>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">Customize the pattern-spotting sensitivity below depending on your personal activity profile.</p>
+            <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 220px;">
+                    <label for="sigma-slider" style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Detection Sensitivity <span id="sigma-val">2.5</span></label>
+                    <input type="range" id="sigma-slider" min="1.0" max="4.0" step="0.1" value="2.5" oninput="document.getElementById('sigma-val').innerText = this.value">
+                    <span style="display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3;">Lower numbers highlight minor physical deviations; higher numbers flag only extreme changes.</span>
+                </div>
+                <div style="flex: 1; min-width: 220px;">
+                    <label for="eps-slider" style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Analysis Detail Level <span id="eps-val">0.8</span></label>
+                    <input type="range" id="eps-slider" min="0.1" max="3.0" step="0.1" value="0.8" oninput="document.getElementById('eps-val').innerText = this.value">
+                    <span style="display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3;">Defines how close fitness tracker values must be to form a normal group category.</span>
+                </div>
+                <button class="btn-primary" onclick="applySensitivity()" style="padding: 8px 16px; font-size:13px; min-width:auto; margin-top:20px;">Apply Adjustments</button>
+            </div>
+        </div>
+
+        <!-- Next step: go to Report -->
+        <div class="btn-row" style="margin-top:28px;">
+            <a href="/preprocess" class="btn-secondary">← Go back</a>
+            <a href="/report" class="btn-primary" style="text-align:center;text-decoration:none;flex:1;">
+                View Full Report &amp; Download PDF →
+            </a>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-state" style="display:none;text-align:center;padding:40px 0;">
+        <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+        <div style="font-size:16px;font-weight:600;color:#2563eb;">Analysing your data…</div>
+        <div style="font-size:14px;color:#64748b;margin-top:6px;">This usually takes a few seconds.</div>
+    </div>
+</section>
+
+{% if results %}
+<script>
+// Auto-display pre-loaded results from server
+window.addEventListener("DOMContentLoaded", () => {
+    const r = {{ results | tojson }};
+    displayResults(r);
+});
+</script>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function runAnalysis(btn) {
+    const errDiv = document.getElementById("analysis-error");
+    if (errDiv) errDiv.style.display = "none";
+
+    document.getElementById("run-btn-row").style.display = "none";
+    document.getElementById("pre-cards").style.display   = "none";
+    document.getElementById("loading-state").style.display = "";
+
+    try {
+        const res = await fetch("/api/run-analysis", { method: "POST" });
+        if (!res.ok) {
+            const err = await res.json();
+            showError(err.detail || "Analysis failed. Please go back and re-upload your file.");
+            return;
+        }
+        const data = await res.json();
+        displayResults(data);
+    } catch (e) {
+        showError("Network error. Please ensure the server is running.");
+    }
+}
+
+async function runUserComparison(userId) {
+    if (!userId) {
+        document.getElementById("user-compare-results").innerHTML = "";
+        return;
+    }
+    document.getElementById("user-compare-results").innerHTML = "Analyzing...";
+    try {
+        const res = await fetch(`/api/user-comparison?user_id=${encodeURIComponent(userId)}`);
+        if (!res.ok) throw new Error("Failed to load user comparison");
+        const data = await res.json();
+        
+        const html = data.comparisons.map(c => `
+            <div class="compare-card">
+                <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: bold;">${c.metric}</div>
+                <div style="margin-top:8px; font-size:14px; color: var(--text);">
+                    <div>User: <strong>${c.user_avg}</strong></div>
+                    <div>Cohort: <strong>${c.cohort_avg}</strong></div>
+                    <div style="color:${c.percentile >= 50 ? 'var(--emerald)' : 'var(--rose)'}; font-size:12px; margin-top:8px; font-weight:600;">
+                        Percentile: ${c.percentile}th
+                    </div>
+                </div>
+            </div>
+        `).join("");
+        document.getElementById("user-compare-results").innerHTML = html || "No numerical roles found to compare.";
+    } catch (e) {
+        document.getElementById("user-compare-results").innerHTML = `<span style="color:red">${e.message}</span>`;
+    }
+}
+
+async function applySensitivity() {
+    const errDiv = document.getElementById("analysis-error");
+    if (errDiv) errDiv.style.display = "none";
+
+    const sigma = document.getElementById("sigma-slider").value;
+    const eps = document.getElementById("eps-slider").value;
+    
+    document.getElementById("results-section").style.opacity = "0.5";
+    
+    try {
+        const res = await fetch("/api/rerun-anomaly-detection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sigma: parseFloat(sigma), eps: parseFloat(eps) })
+        });
+        if (!res.ok) throw new Error("Failed to rerun detection");
+        const data = await res.json();
+        
+        displayResults(data);
+    } catch(e) {
+        showError(e.message);
+    } finally {
+        document.getElementById("results-section").style.opacity = "1";
+    }
+}
+
+function displayResults(data) {
+    document.getElementById("loading-state").style.display   = "none";
+    document.getElementById("pre-cards").style.display       = "none";
+    document.getElementById("run-btn-row").style.display     = "flex";
+    document.getElementById("results-section").style.display = "";
+    document.getElementById("sensitivity-config").style.display = "";
+
+    // Metric name
+    document.getElementById("res-metric-name").innerHTML = `📊 ${data.metric_name} Analysis Results`;
+
+    // Summary pills
+    const s = data.summary_stats || {};
+    const pills = [
+        { label: "📅 Days Analysed", val: s.total_days ?? "—" },
+        { label: "📊 Average",        val: (s.mean ?? "—").toLocaleString() },
+        { label: "⬆️ Peak",           val: (s.max ?? "—").toLocaleString()  },
+        { label: "⬇️ Lowest",         val: (s.min ?? "—").toLocaleString()  },
+        { label: "⚠️ Unusual Days",   val: s.anomaly_count ?? 0             },
+    ];
+    document.getElementById("res-pills").innerHTML =
+        pills.map(p => `<div class="summary-pill">${p.label}: <strong>${p.val}</strong></div>`).join("");
+
+    // Insights
+    const insights = data.insights || [];
+    document.getElementById("res-insights").innerHTML = insights
+        .map(i => `<div class="info-callout" style="margin-bottom:8px;">${i}</div>`)
+        .join("");
+
+    // Correlation Insights
+    const corr_insights = data.correlation_insights || [];
+    if (corr_insights.length > 0) {
+        document.getElementById("corr-insights-header").style.display = "";
+        document.getElementById("corr-insights").innerHTML = corr_insights
+            .map(i => `<div class="info-callout" style="background-color: rgba(16, 185, 129, 0.08); border-left-color: var(--teal); color: #a7f3d0; margin-bottom:8px;">🔗 ${i}</div>`)
+            .join("");
+    }
+    
+    // User Cohort Dropdown
+    const userIds = data.user_ids || [];
+    if (userIds.length > 0) {
+        document.getElementById("user-compare-header").style.display = "";
+        document.getElementById("user-compare-section").style.display = "";
+        const select = document.getElementById("user-select");
+        select.innerHTML = '<option value="">-- Select a User --</option>' + userIds.map(u => `<option value="${u}">${u}</option>`).join("");
+    } else {
+        document.getElementById("user-compare-header").style.display = "none";
+        document.getElementById("user-compare-section").style.display = "none";
+    }
+
+    // Chart
+    if (data.chart_b64) {
+        document.getElementById("res-chart").src = `data:image/png;base64,${data.chart_b64}`;
+    }
+
+    // Anomaly table
+    const anomalies = data.anomalies || [];
+    if (anomalies.length > 0) {
+        document.getElementById("anomaly-section").style.display = "";
+        document.getElementById("anomaly-tbody").innerHTML = anomalies
+            .map(a => `<tr>
+                <td>${a.date}</td>
+                <td><strong>${Number(a.value).toLocaleString()}</strong></td>
+                <td><span class="confidence-badge ${a.severity === 'High' ? 'confidence-low' : 'confidence-med'}">${a.severity}</span></td>
+                <td style="font-size: 0.9em; color: var(--dim);">${a.reason || '—'}</td>
+            </tr>`).join("");
+    }
+}
+
+function showError(msg) {
+    document.getElementById("loading-state").style.display  = "none";
+    document.getElementById("run-btn-row").style.display    = "flex";
+    document.getElementById("pre-cards").style.display      = "flex";
+    
+    const errDiv = document.getElementById("analysis-error");
+    if (errDiv) {
+        errDiv.innerHTML = `❌ ${msg}`;
+        errDiv.style.display = "block";
+        errDiv.scrollIntoView({ behavior: "smooth" });
+    } else {
+        alert("❌ " + msg);
+    }
+}
+</script>
+{% endblock %}

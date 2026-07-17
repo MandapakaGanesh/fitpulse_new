@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPulse · Health Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css?v=3">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <header class="topbar">
+        <a href="/" class="brand" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+            <div class="brand-mark">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                    <polyline points="2,16 7,16 10,7 16,26 22,9 26,20 29,16 30,16"
+                        stroke="url(#g)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="0">
+                        <stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#0d9488"/>
+                    </linearGradient></defs>
+                </svg>
+            </div>
+            <span>FitPulse</span>
+        </a>
+        <div class="topbar-sub">Dynamic Fitness Analytics Pipeline</div>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 16px; padding-right: 16px;">
+            {% if stage > 1 %}
+            <a href="/?edit=1" style="font-size: 13px; color: #2563eb; text-decoration: none; font-weight: 500;">✏️ Edit Column Mapping</a>
+            {% endif %}
+            {% if stage >= 1 %}
+            <a href="/" style="font-size: 13px; color: #10b981; text-decoration: none; font-weight: 600; margin-right: 12px;">⚡ Ingestion Wizard</a>
+            <a href="/profile" style="font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 600; margin-right: 12px;">👤 View Profile</a>
+            <a href="/logout" style="font-size: 13px; color: #f43f5e; text-decoration: none; font-weight: 500;">🔑 Logout</a>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if stage > 0 %}
+    <nav class="wizard-track">
+        <!-- Stage 1: Upload -->
+        {% if stage > 1 %}
+        <a href="/" class="wizard-step done" title="Go back to Upload">
+        {% else %}
+        <div class="wizard-step {{ 'active' if stage == 1 else '' }}">
+        {% endif %}
+            <div class="wizard-circle">{{ '✓' if stage > 1 else '1' }}</div>
+            <span>Upload</span>
+        {% if stage > 1 %}</a>{% else %}</div>{% endif %}
+
+        <div class="wizard-line {{ 'done' if stage > 1 else '' }}"></div>
+
+        <!-- Stage 2: Preprocess -->
+        {% if stage > 2 %}
+        <a href="/preprocess" class="wizard-step done" title="Go back to Preprocess">
+        {% else %}
+        <div class="wizard-step {{ 'active' if stage == 2 else '' }}">
+        {% endif %}
+            <div class="wizard-circle">{{ '✓' if stage > 2 else '2' }}</div>
+            <span>Preprocess</span>
+        {% if stage > 2 %}</a>{% else %}</div>{% endif %}
+
+        <div class="wizard-line {{ 'done' if stage > 2 else '' }}"></div>
+
+        <!-- Stage 3: Analyze -->
+        {% if stage > 3 %}
+        <a href="/analyze" class="wizard-step done" title="Go back to Analyze">
+        {% else %}
+        <div class="wizard-step {{ 'active' if stage == 3 else '' }}">
+        {% endif %}
+            <div class="wizard-circle">{{ '✓' if stage > 3 else '3' }}</div>
+            <span>Analyze</span>
+        {% if stage > 3 %}</a>{% else %}</div>{% endif %}
+
+        <div class="wizard-line {{ 'done' if stage > 3 else '' }}"></div>
+
+        <!-- Stage 4: Report -->
+        <div class="wizard-step {{ 'active' if stage == 4 else '' }}">
+            <div class="wizard-circle">4</div>
+            <span>Report</span>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
