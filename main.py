@@ -107,7 +107,16 @@ async def api_login(request: Request):
     username = body.get("username")
     password = body.get("password")
     
-    if user_store.verify_user(username, password):
+    try:
+        is_valid = user_store.verify_user(username, password)
+    except Exception as e:
+        print(f"Database error during authentication: {e}")
+        return JSONResponse(
+            {"status": "error", "message": "Database connection error. Please verify your MONGO_URI is configured correctly in Render dashboard environment variables."},
+            status_code=500
+        )
+        
+    if is_valid:
         response = JSONResponse({"status": "success", "redirect": "/"})
         response.set_cookie("fp_logged_in", "true", httponly=True, samesite="lax")
         response.set_cookie("fp_user", username.strip().lower(), httponly=True, samesite="lax")
@@ -128,7 +137,15 @@ async def api_register(request: Request):
     if not username or not password:
         return JSONResponse({"status": "error", "message": "Username and password are required."}, status_code=400)
     
-    success = user_store.register_user(username, password)
+    try:
+        success = user_store.register_user(username, password)
+    except Exception as e:
+        print(f"Database error during registration: {e}")
+        return JSONResponse(
+            {"status": "error", "message": "Database connection error. Please verify your MONGO_URI is configured correctly in Render dashboard environment variables."},
+            status_code=500
+        )
+        
     if success:
         return JSONResponse({"status": "success", "message": "Registered successfully."})
     else:

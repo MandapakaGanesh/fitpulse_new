@@ -64,42 +64,39 @@ def register_user(username: str, password: str) -> bool:
     """
     Registers a new user inside MongoDB with hashed credentials.
     Returns: True if success, False if user exists.
+    Raises: PyMongoError on database connection failures or issues.
     """
     username = username.strip().lower()
     if not username or not password:
         return False
         
-    try:
-        if users_col.count_documents({"_id": username}) > 0:
-            return False
-            
-        salt = _generate_salt()
-        hashed = _hash_password(password, salt)
-        users_col.insert_one({"_id": username, "salt": salt, "hash": hashed})
-        return True
-    except Exception as e:
-        print(f"Error during registration: {e}")
+    if users_col.count_documents({"_id": username}) > 0:
         return False
+        
+    salt = _generate_salt()
+    hashed = _hash_password(password, salt)
+    users_col.insert_one({"_id": username, "salt": salt, "hash": hashed})
+    return True
 
 
 def verify_user(username: str, password: str) -> bool:
-    """Verifies that the username and password match database records."""
+    """
+    Verifies that the username and password match database records.
+    Returns: True if credentials match, False if user doesn't exist or password mismatch.
+    Raises: PyMongoError on database connection failures.
+    """
     username = username.strip().lower()
     if not username or not password:
         return False
         
-    try:
-        user_info = users_col.find_one({"_id": username})
-        if not user_info:
-            return False
-            
-        salt = user_info.get("salt")
-        stored_hash = user_info.get("hash")
-        
-        return _hash_password(password, salt) == stored_hash
-    except Exception as e:
-        print(f"Error during authentication: {e}")
+    user_info = users_col.find_one({"_id": username})
+    if not user_info:
         return False
+        
+    salt = user_info.get("salt")
+    stored_hash = user_info.get("hash")
+    
+    return _hash_password(password, salt) == stored_hash
 
 
 # ── Mongo PDF and Results Storage ─────────────────────────────────
